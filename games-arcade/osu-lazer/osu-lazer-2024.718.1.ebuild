@@ -63,7 +63,6 @@ humanizer.core.zh-hans@2.14.1
 humanizer.core.zh-hant@2.14.1
 humanizer.core@2.14.1
 humanizer@2.14.1
-jetbrains.annotations@2022.3.1
 jetbrains.annotations@2023.3.0
 managed-midi@1.10.0
 markdig@0.23.0
@@ -139,20 +138,18 @@ ppy.managedbass.wasapi@2022.1216.0
 ppy.managedbass@2022.1216.0
 ppy.osu.framework.nativelibs@2024.326.0-nativelibs
 ppy.osu.framework.sourcegeneration@2023.720.0
-ppy.osu.framework@2024.329.0
-ppy.osu.framework@2024.509.0
-ppy.osu.game.resources@2024.510.0
-ppy.osu.game.resources@2024.517.0
+ppy.osu.framework@2024.625.0
+ppy.osu.framework@2024.720.0
+ppy.osu.game.resources@2024.622.0
+ppy.osu.game.resources@2024.713.0
 ppy.osutk.ns20@1.0.211
 ppy.sdl2-cs@1.0.741-alpha
-ppy.sdl3-cs@2024.418.1
-ppy.veldrid.metalbindings@4.9.11-ged7d28974e
-ppy.veldrid.metalbindings@4.9.9-ga61b647961
-ppy.veldrid.openglbindings@4.9.11-ged7d28974e
-ppy.veldrid.openglbindings@4.9.9-ga61b647961
+ppy.sdl3-cs@2024.528.0
+ppy.sdl3-cs@2024.717.0
+ppy.veldrid.metalbindings@4.9.58-gfe61932a71
+ppy.veldrid.openglbindings@4.9.58-gfe61932a71
 ppy.veldrid.spirv@1.0.15-gca6cec7843
-ppy.veldrid@4.9.11-ged7d28974e
-ppy.veldrid@4.9.9-ga61b647961
+ppy.veldrid@4.9.58-gfe61932a71
 ppy.vk@1.0.26
 realm.platformhelpers@11.5.0
 realm@11.5.0
@@ -205,7 +202,6 @@ sharpcompress@0.36.0
 sharpfnt@2.0.0
 sharpgen.runtime.com@2.0.0-beta.13
 sharpgen.runtime@2.0.0-beta.13
-sixlabors.imagesharp@3.1.3
 sixlabors.imagesharp@3.1.4
 sqlitepclraw.bundle_e_sqlite3@2.1.8
 sqlitepclraw.core@2.1.4
@@ -326,7 +322,6 @@ system.threading@4.3.0
 system.xml.readerwriter@4.3.0
 system.xml.xdocument@4.3.0
 taglibsharp@2.3.0
-vk@1.0.25
 vortice.d3dcompiler@2.4.2
 vortice.direct3d11@2.4.2
 vortice.directx@2.4.2
@@ -343,22 +338,18 @@ HOMEPAGE="
 	https://github.com/ppy/osu
 "
 
-if [[ ${PV} == *9999* ]] ; then
-	inherit git-r3
-	EGIT_REPO_URI="https://github.com/ppy/osu.git"
-else
-	SRC_URI="https://github.com/ppy/osu/archive/refs/tags/${PV}.tar.gz -> ${P}.tar.gz"
-	# updtream supported runtime:
-	# linux-{,musl-}{arm,arm64,x64,x86}
-	# only tested on linux-x64
-	KEYWORDS="~amd64"
-	S="${WORKDIR}/osu-${PV}"
-fi
-
-SRC_URI+=" ${NUGET_URIS} "
+SRC_URI="
+	https://github.com/ppy/osu/archive/refs/tags/${PV}.tar.gz -> ${P}.tar.gz
+	${NUGET_URIS}
+"
+# updtream supported runtime:
+# linux-{,musl-}{arm,arm64,x64,x86}
+# only tested on linux-x64
+S="${WORKDIR}/osu-${PV}"
 
 LICENSE="MIT CC-BY-NC-4.0"
 SLOT="0"
+KEYWORDS="~amd64"
 
 DEPEND="
 	virtual/dotnet-sdk:8.0
@@ -373,15 +364,9 @@ RDEPEND="
 "
 BDEPEND="${DEPEND}"
 
-DOTNET_PKG_PROJECTS=( "${S}/osu.Desktop/osu.Desktop.csproj" )
+DOTNET_PKG_PROJECTS=( "${S}/osu.Desktop" )
 
 DOCS=( README.md )
-
-src_unpack() {
-	dotnet-pkg_src_unpack
-
-	[[ ${EGIT_REPO_URI} ]] && git-r3_src_unpack
-}
 
 src_configure() {
 	dotnet-pkg-base_info
@@ -400,6 +385,7 @@ src_compile() {
 
 src_install() {
 	dotnet-pkg-base_install
+	dotnet-pkg-base_append-launchervar OSU_EXTERNAL_UPDATE_PROVIDER=1
 	dotnet-pkg-base_dolauncher "/usr/share/${P}/osu!" osu-lazer
 
 	newicon assets/lazer.png osu-lazer.png
